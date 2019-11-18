@@ -37,14 +37,14 @@ if(isset($_POST['download_pdf'])) {
     $root_url = $url_part4.$path_slash.$url_part5.$path_slash.$url_part6.$path_slash.$url_part7.$path_slash.$url_part8.$path_slash.$url_part9;
     $root_url_str  = str_replace('/', '\\', $root_url);
 
-    $image_url_pdf = $root_path_str.$root_url_str; 
+    $image_url_pdf = $root_path_str.$path_slash.$root_url_str; 
    
 
 	$dompdf = new Dompdf();
     $pdf_dom = '
         <center><h2 class="pdf-post-title">'.$post->post_title.'</h2></center>
         <div class="pdf-post-content">
-            <center><img src="'.$image_url_pdf.'" alt="Cinque Terre" width="500" height="500"/></center>
+            <center><img src="'.$image_url_pdf.'" alt="" width="500" height="500"/></center>
             <center><img src="C:\Wamp64\www\eventbookings-website\wp-content\themes\webalive\assets\images\header.jpg" alt="Cinque Terre" width="500" height="500"/></center>
             <br>
             '.$post->post_content.'
@@ -78,6 +78,10 @@ if(isset($_POST['download_pdf'])) {
         </div>
         <div class="pdf-content">
         ' . $root_url_str . '
+        </div>
+        <div class="pdf-content">
+        ' . $image_url_pdf . '
+        </div>
 	';
 
 	$dompdf->loadHtml($pdf_dom);
