@@ -1,0 +1,84 @@
+<?php
+/**
+ * The template for displaying all single posts
+ *
+ * @link https://developer.wordpress.org/themes/basics/template-hierarchy/#single-post
+ *
+ * @package webalive
+ */
+// reference the Dompdf namespace
+
+use Dompdf\Options;
+require_once __DIR__ . '\dompdf-master\lib\html5lib\Parser.php';
+require_once __DIR__ . '\dompdf-master\autoload.inc.php';
+require_once __DIR__ . '\dompdf-master\src\Autoloader.php';
+use Dompdf\Dompdf;
+
+
+$options = new Options();
+$options->set('isRemoteEnabled', TRUE);
+$dompdf = new Dompdf($options);
+$contxt = stream_context_create([ 
+    'ssl' => [ 
+        'verify_peer' => FALSE, 
+        'verify_peer_name' => FALSE,
+        'allow_self_signed'=> TRUE
+    ] 
+]);
+$dompdf->setHttpContext($contxt);
+// ...
+if( 'POST' == $_SERVER['REQUEST_METHOD'] && !empty( $_POST['action'] ) &&  $_POST['action'] == "generate-one-sheet" && check_admin_referer( 'verify_generate_one_sheet', 'nonce_generate_one_sheet' )) { 
+
+//Get post ID from form submission
+$my_postid = $_POST['postid'];
+$content_post = get_post($my_postid);
+$thecontent = $content_post->post_content;        
+$thecontent = apply_filters('the_content', $thecontent);
+$content = '
+<html>
+  	<head>
+   		<style>
+	       .pdf-title {
+	           text-transform: uppercase;
+	       }
+	       .pdf-content {
+	         
+	       }
+	       .pdf-image {
+			  	border: 1px solid red;
+	       }
+  		</style> 
+  	</head>
+  	<body>
+      <div class="pdf-title">
+          <h1>' . get_the_title() . '</h1>
+      </div>
+      <div class="pdf-image">
+		<img src="wp-content/uploads/2019/11/AR_1205_Sharjah_Mosque-40.jpg"style="width:500px;height:600px;" />
+	  </div>
+      <div class="pdf-content">
+          ' . $thecontent . '
+      </div>
+  	</body>
+</html>
+';
+ 
+
+$dompdf = new Dompdf();
+$dompdf->loadHtml($content);
+$dompdf->set_paper( 'letter' , 'portrait' );
+$dompdf->render();
+$doctitle = get_the_title() . '- MyWebsite.com';
+$dompdf->stream($doctitle);
+exit();
+}
+?>
+
+<form class="form-horizontal" id="" role="form" action="" method="post">
+	<button type="submit" class="download-details">
+		Download as PDF <i class="fa fa-download"></i>
+	</button>
+		<input type="hidden" name="action" value="generate-one-sheet" />
+		<input type="hidden" name="postid" value="<?php echo get_the_ID(); ?>" />
+	<?php wp_nonce_field('verify_generate_one_sheet','nonce_generate_one_sheet'); ?>
+</form>
